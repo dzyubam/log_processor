@@ -1,17 +1,18 @@
 import argparse
+import glob
 import re
 from datetime import datetime
 from enum import Enum
-from os.path import isfile
 from pprint import pprint as pp
 
 from sqlalchemy import Column, Integer, String, DateTime
-from database import Base, db_session
+from database import Base, db_session, init_db
 
 LOGIN_PAGE = 'wp-login.php'
 
 
 class EventType(Enum):
+    # TODO: add HEAD and OPTIONS verbs
     # POST to wp-login.php
     post_login = 0
     # GET of wp-login.php
@@ -297,7 +298,7 @@ def parse_line(line, event_type=None):
 def parse_file(file_name, event_type=None, save_to_db=False):
     """
     Parse a given file and return list of dicts representing rows that matched a given EventType
-    @param file_name: File to parse
+    @param file_name: File or file mask to parse
     @type file_name: str
     @param event_type: EventType to look for
     @type event_type: EventType | None
@@ -305,16 +306,18 @@ def parse_file(file_name, event_type=None, save_to_db=False):
     @type save_to_db: bool
     @rtype: list[Event]
     """
-    if not isfile(file_name):
-        raise ValueError("Cannot find file '{}'".format(file_name))
+    matched_files = glob.glob(file_name)
+    if not matched_files:
+        raise ValueError("Cannot find file(s) '{}'".format(file_name))
 
     result = list()
 
-    with open(file_name, "r") as f:
-        for line in f:
-            parsed_event = parse_line(line, event_type)
-            if parsed_event:
-                result.append(parsed_event)
+    for file_name in matched_files:
+        with open(file_name, "r") as f:
+            for line in f:
+                parsed_event = parse_line(line, event_type)
+                if parsed_event:
+                    result.append(parsed_event)
 
     if save_to_db:
         Event.save_all(result)
@@ -323,7 +326,6 @@ def parse_file(file_name, event_type=None, save_to_db=False):
 
 
 if __name__ == '__main__':
-    # TODO: add option to parse multiple files by giving a file mask
     # what parameters should it accept? file, action, event_type, etc
     parser = argparse.ArgumentParser(description='Parse a log file and output results')
     parser.add_argument('--file', '-f', help='File to parse or file mask to parse many files', type=str, required=True)
