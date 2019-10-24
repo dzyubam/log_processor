@@ -14,5 +14,5 @@ Base.query = db_session.query_property()
 
 
 def init_db():
-    from log_processor import Event
+    # from log_processor import Event
     Base.metadata.create_all(bind=engine)

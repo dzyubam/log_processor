@@ -3,10 +3,11 @@ import glob
 import re
 from datetime import datetime
 from enum import Enum
+from os.path import isfile
 from pprint import pprint as pp
 
 from sqlalchemy import Column, Integer, String, DateTime
-from database import Base, db_session, init_db
+from database import Base, db_session, init_db, DB_FILE
 
 LOGIN_PAGE = 'wp-login.php'
 
@@ -326,7 +327,8 @@ def parse_file(file_name, event_type=None, save_to_db=False):
 
 
 if __name__ == '__main__':
-    # what parameters should it accept? file, action, event_type, etc
+    if not isfile(DB_FILE):
+        init_db()
     parser = argparse.ArgumentParser(description='Parse a log file and output results')
     parser.add_argument('--file', '-f', help='File to parse or file mask to parse many files', type=str, required=True)
     parser.add_argument('--event', '-e', help='Event type to look for', type=int, required=False)
