@@ -13,7 +13,6 @@ LOGIN_PAGE = 'wp-login.php'
 
 
 class EventType(Enum):
-    # TODO: add HEAD and OPTIONS verbs
     # POST to wp-login.php
     post_login = 0
     # GET of wp-login.php
@@ -26,6 +25,10 @@ class EventType(Enum):
     post = 4
     # any other GET
     get = 5
+    # HEAD
+    head = 6
+    # OPTIONS
+    options = 7
 
 
 class Event(Base):
@@ -229,6 +232,28 @@ def is_get(line):
     return verb == 'GET'
 
 
+def is_head(line):
+    """
+    Determine if it was a HEAD request
+    @param line: Log line
+    @type line: str
+    @rtype: bool
+    """
+    verb = get_method(line)
+    return verb == 'HEAD'
+
+
+def is_options(line):
+    """
+    Determine if it was a OPTIONS request
+    @param line: Log line
+    @type line: str
+    @rtype: bool
+    """
+    verb = get_method(line)
+    return verb == 'OPTIONS'
+
+
 def is_login_page(line):
     """
     Determine if it was a login page
@@ -252,6 +277,8 @@ def parse_line(line, event_type=None):
     source_ip = get_source_ip(line)
     post = is_post(line)
     get = is_get(line)
+    head = is_head(line)
+    options = is_options(line)
     status_code = get_status_code(line)
     user_agent = get_user_agent(line)
     url = get_url(line)
@@ -289,6 +316,14 @@ def parse_line(line, event_type=None):
                     break
             elif e == EventType.get:
                 if get:
+                    event_type = e
+                    break
+            elif e == EventType.head:
+                if head:
+                    event_type = e
+                    break
+            elif e == EventType.options:
+                if options:
                     event_type = e
                     break
         event = Event(source_ip, event_type, status_code, user_agent, url, date_time, line)

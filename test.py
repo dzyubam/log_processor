@@ -53,6 +53,16 @@ class TestLogProcessor(TestCase):
         result = get_method(line)
         self.assertEqual('DELETE', result)
 
+        line = '150.95.105.63 - - [01/Oct/2019:07:26:54 +0300] "HEAD /backup.zip HTTP/1.1" 404 5536 "-" ' \
+               '"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:62.0) Gecko/20100101 Firefox/62.0"'
+        result = get_method(line)
+        self.assertEqual('HEAD', result)
+
+        line = '150.95.105.63 - - [01/Oct/2019:07:26:54 +0300] "OPTIONS /backup.zip HTTP/1.1" 404 5536 "-" ' \
+               '"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:62.0) Gecko/20100101 Firefox/62.0"'
+        result = get_method(line)
+        self.assertEqual('OPTIONS', result)
+
         line = '150.95.105.63 - - [01/Oct/2019:07:26:54 +0300] "no_method /wp-login.php HTTP/1.1" 200 5536 "-" ' \
                '"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:62.0) Gecko/20100101 Firefox/62.0"'
         result = get_method(line)
