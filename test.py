@@ -5,7 +5,7 @@ from os.path import isfile
 
 from log_processor import get_source_ip, get_method, get_url, is_post, is_login_page, get_status_code, get_user_agent, \
     get_datetime, parse_line, Event
-from database import init_db, DB_FILE, db_session
+from database import init_db, DB_FILE
 
 
 class TestLogProcessor(TestCase):
@@ -79,6 +79,11 @@ class TestLogProcessor(TestCase):
                '200 7930 "-" "Googlebot-Image/1.0"'
         result = get_url(line)
         self.assertEqual('/wp-content/uploads/2007/09/map.gif', result)
+
+        line = '66.249.79.159 - - [01/Oct/2019:07:02:14 +0300] "GET / HTTP/1.1" ' \
+               '200 7930 "-" "Googlebot-Image/1.0"'
+        result = get_url(line)
+        self.assertEqual('/', result)
 
         line = '66.249.79.159 - - [01/Oct/2019:07:02:14 +0300] "GET \x03 HTTP/1.1" ' \
                '200 7930 "-" "Googlebot-Image/1.0"'

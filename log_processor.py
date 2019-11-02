@@ -190,7 +190,7 @@ def get_url(line):
     url = 'NO URL FOUND'
     split_line = line.split('"')
     if len(split_line) > 1:
-        search_result = re.search(r' (/[^\s]+)', split_line[1])
+        search_result = re.search(r' (/[^\s]*)', split_line[1])
         if search_result:
             url = search_result.group(0).strip()
     return url
