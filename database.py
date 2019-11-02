@@ -1,11 +1,11 @@
-import os
+from pathlib import Path
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 
-DB_FILE = '{}/log_processor.db'.format(os.path.dirname(os.path.abspath(__file__)))
+DB_FILE = '{}/log_processor.db'.format(Path(__file__).resolve().parent)
 
 
 engine = create_engine('sqlite:///{}'.format(DB_FILE), convert_unicode=True)
