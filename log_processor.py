@@ -292,7 +292,7 @@ def parse_line(line, event_type=None):
             if post and login_page:
                 event = Event(source_ip, event_type, status_code, user_agent, url, date_time, line)
     else:
-        # TODO: add all event type smarter
+        # TODO: add all event types smarter
         for e in EventType:
             if e == EventType.post_login:
                 if post and login_page:
