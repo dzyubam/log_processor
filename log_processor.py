@@ -75,7 +75,7 @@ class Event(Base):
         String representation
         @rtype: str
         """
-        return '<Event {}>'.format(self.__dict__)
+        return '<{} {}>'.format(self.__class__.__name__, self.__dict__)
 
     def save(self):
         """
