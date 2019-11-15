@@ -261,3 +261,5 @@ class TestLogProcessor(TestCase):
         if reports:
             for r in reports:
                 self.assertIsInstance(r, Report)
+            Report.save_all(reports)
+            self.assertIsInstance(Report.query.first(), Report)
