@@ -1,12 +1,13 @@
+import random
 from datetime import datetime
 from unittest import TestCase
 from os.path import isfile
 
 
 from log_processor import get_source_ip, get_method, get_url, is_post, is_login_page, get_status_code, get_user_agent, \
-    get_datetime, parse_line, Event
-from report import Report, get_base_reports
-from database import init_db, DB_FILE
+    get_datetime, parse_line, Event, EventType
+from report import Report, get_base_reports, get_counts_by_event_type
+from database import init_db, DB_FILE, db_session
 
 
 class TestLogProcessor(TestCase):
@@ -263,3 +264,23 @@ class TestLogProcessor(TestCase):
                 self.assertIsInstance(r, Report)
             Report.save_all(reports)
             self.assertIsInstance(Report.query.first(), Report)
+
+    def test_get_counts_by_event_type(self):
+        for event_type in EventType:
+            print()
+            print(event_type)
+            counts = get_counts_by_event_type(event_type)
+            self.assertIsInstance(counts, dict)
+            self.assertGreater(len(counts), 0)
+            all_items = list(counts.items())
+            print("Total items: {}".format(len(all_items)))
+            print()
+            # Shuffle to test different items every time
+            random.shuffle(all_items)
+            for i, (ip, count) in enumerate(all_items):
+                if i < 10:
+                    self.assertIsInstance(count, int)
+                    self.assertIsInstance(ip, str)
+                    self.assertEqual(count, Event.query.filter(Event.event_type == event_type.name,
+                                                               Event.source_ip == ip).count())
+                    print("'{}'".format(ip), count)

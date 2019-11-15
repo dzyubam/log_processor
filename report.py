@@ -1,5 +1,5 @@
 from database import db_session, Base
-from log_processor import Event
+from log_processor import Event, EventType
 
 from sqlalchemy import Column, Integer, String, DateTime, func, Text
 
@@ -121,3 +121,19 @@ def get_base_reports():
     for g in grouped_events:
         reports.append(Report(g[0], g[1], g[2]))
     return reports
+
+
+def get_counts_by_event_type(event_type):
+    """
+    Generate updates for all IPs for a given EventType
+    @param event_type: EventType to generate report for
+    @type event_type: EventType
+    @return: Dict with IP as key and count as value
+    @rtype: dict
+    """
+    counts = dict()
+    grouped_events = db_session.query(Event.source_ip, func.count(Event.source_ip)).group_by(Event.source_ip).filter(
+         Event.event_type == event_type.name).all()
+    for e in grouped_events:
+        counts[e[0]] = e[1]
+    return counts
