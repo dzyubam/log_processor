@@ -7,10 +7,14 @@ from os.path import isfile
 from log_processor import get_source_ip, get_method, get_url, is_post, is_login_page, get_status_code, get_user_agent, \
     get_datetime, parse_line, Event, EventType
 from report import Report, get_base_reports, get_counts_by_event_type
-from database import init_db, DB_FILE, db_session
+from database import init_db, DB_FILE
 
 
 class TestLogProcessor(TestCase):
+    def setUp(self):
+        # Make sure DB is instantiated
+        init_db()
+
     def test_get_source_ip(self):
         line = '150.95.105.63 - - [01/Oct/2019:07:26:52 +0300] "GET /wp-login.php HTTP/1.1" 200 5128 "-" ' \
                '"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:62.0) Gecko/20100101 Firefox/62.0"'
