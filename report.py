@@ -112,14 +112,15 @@ class Report(Base):
 def get_base_reports():
     """
     Generate reports with IP, total count and latest request date
-    @rtype: list[Report]
+    @return: Dict with IP as key and Report as value
+    @rtype: dict
     """
-    reports = list()
+    reports = dict()
     grouped_events = db_session.query(Event.source_ip,
                                       func.max(Event.date_time),
                                       func.count(Event.source_ip)).group_by(Event.source_ip).all()
     for g in grouped_events:
-        reports.append(Report(g[0], g[1], g[2]))
+        reports[g[0]] = Report(g[0], g[1], g[2])
     return reports
 
 
@@ -137,3 +138,24 @@ def get_counts_by_event_type(event_type):
     for e in grouped_events:
         counts[e[0]] = e[1]
     return counts
+
+
+def generate_reports(save=False):
+    """
+    Generate full reports
+    @param save: Persist to DB
+    @type save: bool
+    @return: Dict with IP as key and Report as value
+    @rtype: dict
+    """
+    full_reports = dict()
+    base_reports = get_base_reports()
+    for event_type in EventType:
+        counts = get_counts_by_event_type(event_type)
+        for ip, count in counts.items():
+            base_report = base_reports[ip]
+            setattr(base_report, "{}_count".format(event_type.name), count)
+            full_reports[ip] = base_report
+    if save and full_reports:
+        Report.save_all(list(full_reports.values()))
+    return full_reports

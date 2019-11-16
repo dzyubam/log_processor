@@ -6,7 +6,7 @@ from os.path import isfile
 
 from log_processor import get_source_ip, get_method, get_url, is_post, is_login_page, get_status_code, get_user_agent, \
     get_datetime, parse_line, Event, EventType
-from report import Report, get_base_reports, get_counts_by_event_type
+from report import Report, get_base_reports, get_counts_by_event_type, generate_reports
 from database import init_db, DB_FILE
 
 
@@ -177,7 +177,6 @@ class TestLogProcessor(TestCase):
         self.assertEqual('UTC+03:00', result.tzname())
 
     def test_init_db(self):
-        init_db()
         self.assertTrue(isfile(DB_FILE))
         # Check that tables are created
         Event.query.first()
@@ -262,12 +261,12 @@ class TestLogProcessor(TestCase):
 
     def test_get_base_reports(self):
         reports = get_base_reports()
-        self.assertIsInstance(reports, list)
+        self.assertIsInstance(reports, dict)
         if reports:
-            for r in reports:
+            for r in reports.values():
                 self.assertIsInstance(r, Report)
-            Report.save_all(reports)
-            self.assertIsInstance(Report.query.first(), Report)
+        else:
+            print("No reports generated! Is database empty?")
 
     def test_get_counts_by_event_type(self):
         for event_type in EventType:
@@ -288,3 +287,10 @@ class TestLogProcessor(TestCase):
                     self.assertEqual(count, Event.query.filter(Event.event_type == event_type.name,
                                                                Event.source_ip == ip).count())
                     print("'{}'".format(ip), count)
+
+    def test_generate_reports(self):
+        full_reports = generate_reports()
+        self.assertIsInstance(full_reports, dict)
+        for report in full_reports.values():
+            self.assertIsInstance(report, Report)
+        print("Generated {} reports".format(len(full_reports)))
