@@ -294,3 +294,7 @@ class TestLogProcessor(TestCase):
         for report in full_reports.values():
             self.assertIsInstance(report, Report)
         print("Generated {} reports".format(len(full_reports)))
+        # Save to database if no reports table empty
+        if not Report.query.all():
+            Report.save_all(full_reports.values())
+            print("Saved {} reports".format(len(full_reports)))
