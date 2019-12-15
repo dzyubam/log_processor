@@ -6,7 +6,7 @@ from os.path import isfile
 
 from log_processor import get_source_ip, get_method, get_url, is_post, is_login_page, get_status_code, get_user_agent, \
     get_datetime, parse_line, Event, EventType
-from report import Report, get_base_reports, get_counts_by_event_type, generate_reports
+from report import Report, get_base_reports, get_counts_by_event_type, generate_reports, delete_all_reports
 from database import init_db, PROCESSOR_DB_FILE, REPORT_DB_FILE
 
 
@@ -290,12 +290,31 @@ class TestLogProcessor(TestCase):
                     print("'{}'".format(ip), count)
 
     def test_generate_reports(self):
+        existing_reports_with_comments = Report.query.filter(Report.comment != '').all()
         full_reports = generate_reports()
         self.assertIsInstance(full_reports, dict)
+        newly_generated_reports_with_comments = 0
         for report in full_reports.values():
             self.assertIsInstance(report, Report)
+            if report.comment:
+                newly_generated_reports_with_comments += 1
+        # Check that reports that had comments still have them
+        self.assertEqual(len(existing_reports_with_comments), newly_generated_reports_with_comments)
         print("Generated {} reports".format(len(full_reports)))
         # Save to database if no reports table empty
         if not Report.query.all():
             Report.save_all(full_reports.values())
             print("Saved {} reports".format(len(full_reports)))
+
+    def test_get_comment_for_ip(self):
+        reports_with_comments = Report.query.filter(Report.comment != '').all()
+        for r in reports_with_comments:
+            self.assertEqual(r.comment, Report.get_by_ip(r.source_ip).comment)
+
+    def test_delete_all_reports(self):
+        reports = Report.query.all()
+        if reports:
+            print("Deleting {} reports".format(len(reports)))
+            delete_all_reports()
+            reports = Report.query.all()
+            self.assertEqual(len(reports), 0)

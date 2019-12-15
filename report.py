@@ -1,4 +1,4 @@
-from database import report_db_session, processor_db_session, BaseReport
+from database import report_db_session, processor_db_session, BaseReport, init_db
 from log_processor import Event, EventType
 
 from sqlalchemy import Column, Integer, String, DateTime, func, Text
@@ -108,6 +108,16 @@ class Report(BaseReport):
             return False
         return True
 
+    @staticmethod
+    def get_by_ip(ip_address):
+        """
+        Find Report by IP address
+        @param ip_address: IP address
+        @type ip_address: str
+        @rtype: Report
+        """
+        return Report.query.filter(Report.source_ip == ip_address).first()
+
 
 def get_base_reports():
     """
@@ -141,6 +151,30 @@ def get_counts_by_event_type(event_type):
     return counts
 
 
+def get_comment_for_ip(ip_address):
+    """
+    Get comment for a given IP address, if exists
+    @param ip_address: IP address
+    @type ip_address: str
+    @rtype: str
+    """
+    comment = ''
+    report = Report.get_by_ip(ip_address)
+    if report:
+        comment = report.comment
+    return comment
+
+
+def delete_all_reports():
+    """
+    Truncate reports table
+    """
+    report_db_session.execute("""DROP TABLE `{}`;""".format(Report.__tablename__))
+    report_db_session.commit()
+    report_db_session.close()
+    init_db()
+
+
 def generate_reports(save=False):
     """
     Generate full reports
@@ -156,8 +190,10 @@ def generate_reports(save=False):
         for ip, count in counts.items():
             base_report = base_reports[ip]
             setattr(base_report, "{}_count".format(event_type.name), count)
-            # TODO: get an existing comment for a given IP address report in order not to lose it
+            # TODO: store all reports with comments outside of loop to make it faster
+            base_report.comment = get_comment_for_ip(ip)
             full_reports[ip] = base_report
     if save and full_reports:
+        delete_all_reports()
         Report.save_all(list(full_reports.values()))
     return full_reports
