@@ -7,7 +7,7 @@ from os.path import isfile
 from pprint import pprint as pp
 
 from sqlalchemy import Column, Integer, String, DateTime
-from database import Base, db_session, init_db, DB_FILE
+from database import BaseProcessor, processor_db_session, init_db, PROCESSOR_DB_FILE
 
 LOGIN_PAGE = 'wp-login.php'
 
@@ -31,7 +31,7 @@ class EventType(Enum):
     options = 7
 
 
-class Event(Base):
+class Event(BaseProcessor):
     """
     Event extracted from (access) log file
     """
@@ -83,8 +83,8 @@ class Event(Base):
         @rtype: Event
         """
         print('.', end='')
-        db_session.add(self)
-        db_session.commit()
+        processor_db_session.add(self)
+        processor_db_session.commit()
         return self
 
     @staticmethod
@@ -97,8 +97,8 @@ class Event(Base):
         """
         if events_to_save:
             print("Saving {} Events".format(len(events_to_save)))
-            db_session.add_all(events_to_save)
-            db_session.commit()
+            processor_db_session.add_all(events_to_save)
+            processor_db_session.commit()
             return True
         else:
             return False
@@ -109,8 +109,8 @@ class Event(Base):
         @rtype: bool
         """
         try:
-            db_session.delete(self)
-            db_session.commit()
+            processor_db_session.delete(self)
+            processor_db_session.commit()
         except Exception as e:
             print("Error '{}' when deleting {}".format(e, self))
             return False
@@ -362,7 +362,7 @@ def parse_file(file_name, event_type=None, save_to_db=False):
 
 
 if __name__ == '__main__':
-    if not isfile(DB_FILE):
+    if not isfile(PROCESSOR_DB_FILE):
         init_db()
     parser = argparse.ArgumentParser(description='Parse a log file and output results')
     parser.add_argument('--file', '-f', help='File to parse or file mask to parse many files', type=str, required=True)

@@ -1,10 +1,10 @@
-from database import db_session, Base
+from database import report_db_session, processor_db_session, BaseReport
 from log_processor import Event, EventType
 
 from sqlalchemy import Column, Integer, String, DateTime, func, Text
 
 
-class Report(Base):
+class Report(BaseReport):
     """
     Report generated for IP address from log_processor DB
     """
@@ -76,8 +76,8 @@ class Report(Base):
         Persist in DB
         @rtype: Report
         """
-        db_session.add(self)
-        db_session.commit()
+        report_db_session.add(self)
+        report_db_session.commit()
         return self
 
     @staticmethod
@@ -89,8 +89,8 @@ class Report(Base):
         @rtype: bool
         """
         if reports_to_save:
-            db_session.add_all(reports_to_save)
-            db_session.commit()
+            report_db_session.add_all(reports_to_save)
+            report_db_session.commit()
             return True
         else:
             return False
@@ -101,8 +101,8 @@ class Report(Base):
         @rtype: bool
         """
         try:
-            db_session.delete(self)
-            db_session.commit()
+            report_db_session.delete(self)
+            report_db_session.commit()
         except Exception as e:
             print("Error '{}' when deleting {}".format(e, self))
             return False
@@ -116,9 +116,9 @@ def get_base_reports():
     @rtype: dict
     """
     reports = dict()
-    grouped_events = db_session.query(Event.source_ip,
-                                      func.max(Event.date_time),
-                                      func.count(Event.source_ip)).group_by(Event.source_ip).all()
+    grouped_events = processor_db_session.query(Event.source_ip,
+                                                func.max(Event.date_time),
+                                                func.count(Event.source_ip)).group_by(Event.source_ip).all()
     for g in grouped_events:
         reports[g[0]] = Report(g[0], g[1], g[2])
     return reports
@@ -133,8 +133,9 @@ def get_counts_by_event_type(event_type):
     @rtype: dict
     """
     counts = dict()
-    grouped_events = db_session.query(Event.source_ip, func.count(Event.source_ip)).group_by(Event.source_ip).filter(
-         Event.event_type == event_type.name).all()
+    grouped_events = processor_db_session.query(Event.source_ip, func.count(Event.source_ip)).group_by(
+        Event.source_ip).filter(
+        Event.event_type == event_type.name).all()
     for e in grouped_events:
         counts[e[0]] = e[1]
     return counts
@@ -155,6 +156,7 @@ def generate_reports(save=False):
         for ip, count in counts.items():
             base_report = base_reports[ip]
             setattr(base_report, "{}_count".format(event_type.name), count)
+            # TODO: get an existing comment for a given IP address report in order not to lose it
             full_reports[ip] = base_report
     if save and full_reports:
         Report.save_all(list(full_reports.values()))

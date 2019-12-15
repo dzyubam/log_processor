@@ -3,3 +3,4 @@ venv
 __pycache__
 
 log_processor.db
+log_report.db

@@ -7,7 +7,7 @@ from os.path import isfile
 from log_processor import get_source_ip, get_method, get_url, is_post, is_login_page, get_status_code, get_user_agent, \
     get_datetime, parse_line, Event, EventType
 from report import Report, get_base_reports, get_counts_by_event_type, generate_reports
-from database import init_db, DB_FILE
+from database import init_db, PROCESSOR_DB_FILE, REPORT_DB_FILE
 
 
 class TestLogProcessor(TestCase):
@@ -177,7 +177,8 @@ class TestLogProcessor(TestCase):
         self.assertEqual('UTC+03:00', result.tzname())
 
     def test_init_db(self):
-        self.assertTrue(isfile(DB_FILE))
+        self.assertTrue(isfile(PROCESSOR_DB_FILE))
+        self.assertTrue(isfile(REPORT_DB_FILE))
         # Check that tables are created
         Event.query.first()
         Report.query.first()
