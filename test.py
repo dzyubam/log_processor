@@ -301,10 +301,9 @@ class TestLogProcessor(TestCase):
         # Check that reports that had comments still have them
         self.assertEqual(len(existing_reports_with_comments), newly_generated_reports_with_comments)
         print("Generated {} reports".format(len(full_reports)))
-        # Save to database if no reports table empty
-        if not Report.query.all():
-            Report.save_all(full_reports.values())
-            print("Saved {} reports".format(len(full_reports)))
+        delete_all_reports()
+        Report.save_all(full_reports.values())
+        print("Saved {} reports".format(len(full_reports)))
 
     def test_get_comment_for_ip(self):
         reports_with_comments = Report.query.filter(Report.comment != '').all()

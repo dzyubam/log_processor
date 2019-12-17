@@ -151,18 +151,17 @@ def get_counts_by_event_type(event_type):
     return counts
 
 
-def get_comment_for_ip(ip_address):
+def get_comments_by_ip():
     """
     Get comment for a given IP address, if exists
-    @param ip_address: IP address
-    @type ip_address: str
-    @rtype: str
+    @return: Dict with IP as key and comment as value
+    @rtype: dict
     """
-    comment = ''
-    report = Report.get_by_ip(ip_address)
-    if report:
-        comment = report.comment
-    return comment
+    comments = dict()
+    reports = Report.query.filter(Report.comment != '').all()
+    for r in reports:
+        comments[r.source_ip] = r.comment
+    return comments
 
 
 def delete_all_reports():
@@ -185,13 +184,13 @@ def generate_reports(save=False):
     """
     full_reports = dict()
     base_reports = get_base_reports()
+    all_comments = get_comments_by_ip()
     for event_type in EventType:
         counts = get_counts_by_event_type(event_type)
         for ip, count in counts.items():
             base_report = base_reports[ip]
             setattr(base_report, "{}_count".format(event_type.name), count)
-            # TODO: store all reports with comments outside of loop to make it faster
-            base_report.comment = get_comment_for_ip(ip)
+            base_report.comment = all_comments.get(ip, '')
             full_reports[ip] = base_report
     if save and full_reports:
         delete_all_reports()
