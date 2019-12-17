@@ -309,11 +309,3 @@ class TestLogProcessor(TestCase):
         reports_with_comments = Report.query.filter(Report.comment != '').all()
         for r in reports_with_comments:
             self.assertEqual(r.comment, Report.get_by_ip(r.source_ip).comment)
-
-    def test_delete_all_reports(self):
-        reports = Report.query.all()
-        if reports:
-            print("Deleting {} reports".format(len(reports)))
-            delete_all_reports()
-            reports = Report.query.all()
-            self.assertEqual(len(reports), 0)
