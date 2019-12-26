@@ -196,3 +196,8 @@ def generate_reports(save=False):
         delete_all_reports()
         Report.save_all(list(full_reports.values()))
     return full_reports
+
+
+if __name__ == '__main__':
+    saved_reports = generate_reports(save=True)
+    print("Saved {} reports".format(len(saved_reports)))
