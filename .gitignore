@@ -2,5 +2,6 @@
 venv
 __pycache__
 
+*.pyc
 log_processor.db
 log_report.db
