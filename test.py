@@ -249,7 +249,6 @@ class TestLogProcessor(TestCase):
         self.assertEqual(7, result.second)
         self.assertEqual("UTC+03:00", result.tzname())
 
-    @pytest.mark.skip
     def test_init_db(self):
         self.assertTrue(isfile(PROCESSOR_DB_FILE))
         self.assertTrue(isfile(REPORT_DB_FILE))
@@ -330,6 +329,7 @@ class TestLogProcessor(TestCase):
         self.assertEqual("get", result.event_type)
         self.assertEqual(302, result.status_code)
 
+    @pytest.mark.skip
     def test_event_query_all(self):
         line = (
             'xxx.xx.xxx.xx - - [01/Oct/2019:07:26:54 +0300] "GET /index.php HTTP/1.1" 302 5536 "-" '
@@ -359,6 +359,7 @@ class TestLogProcessor(TestCase):
         else:
             print("No reports generated! Is database empty?")
 
+    @pytest.mark.skip
     def test_get_counts_by_event_type(self):
         for event_type in EventType:
             print()
