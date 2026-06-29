@@ -9,7 +9,7 @@ from pprint import pprint as pp
 from sqlalchemy import Column, Integer, String, DateTime
 from database import BaseProcessor, processor_db_session, init_db, PROCESSOR_DB_FILE
 
-LOGIN_PAGE = 'wp-login.php'
+LOGIN_PAGE = "wp-login.php"
 
 
 class EventType(Enum):
@@ -35,7 +35,8 @@ class Event(BaseProcessor):
     """
     Event extracted from (access) log file
     """
-    __tablename__ = 'events'
+
+    __tablename__ = "events"
     id = Column(Integer, primary_key=True)
     source_ip = Column(String(100))
     event_type = Column(String(100))
@@ -45,7 +46,9 @@ class Event(BaseProcessor):
     date_time = Column(DateTime)
     log_line = Column(String(1000))
 
-    def __init__(self, source_ip, event_type, status_code, user_agent, url, date_time, log_line):
+    def __init__(
+        self, source_ip, event_type, status_code, user_agent, url, date_time, log_line
+    ):
         """
         @param source_ip: Source IPv4 address
         @type source_ip: str
@@ -75,14 +78,14 @@ class Event(BaseProcessor):
         String representation
         @rtype: str
         """
-        return '<{} {}>'.format(self.__class__.__name__, self.__dict__)
+        return "<{} {}>".format(self.__class__.__name__, self.__dict__)
 
     def save(self):
         """
         Persist in DB
         @rtype: Event
         """
-        print('.', end='')
+        print(".", end="")
         processor_db_session.add(self)
         processor_db_session.commit()
         return self
@@ -124,16 +127,24 @@ def get_datetime(line):
     @rtype: datetime | None
     """
     date_time = datetime.now()
-    form = '%d/%b/%Y:%H:%M:%S %z'
-    split_line = line.split('[')
+    form = "%d/%b/%Y:%H:%M:%S %z"
+    split_line = line.split("[")
     if len(split_line) > 1:
-        split_line = split_line[1].split(']')
+        split_line = split_line[1].split("]")
         try:
             date_time = datetime.strptime(split_line[0], form)
         except ValueError as e:
-            print("Error '{}' parsing string '{}' to datetime using format '{}'".format(e, split_line[0], form))
+            print(
+                "Error '{}' parsing string '{}' to datetime using format '{}'".format(
+                    e, split_line[0], form
+                )
+            )
         except Exception as e:
-            print("Error '{}' parsing string '{}' to datetime using format '{}'".format(e, split_line[0], form))
+            print(
+                "Error '{}' parsing string '{}' to datetime using format '{}'".format(
+                    e, split_line[0], form
+                )
+            )
 
     return date_time
 
@@ -144,10 +155,10 @@ def get_method(line):
     @param line:
     @rtype: str
     """
-    method = 'NO METHOD FOUND'
+    method = "NO METHOD FOUND"
     split_line = line.split('"')
     if len(split_line) > 1:
-        search_result = re.search(r'^[A-Z]+', split_line[1])
+        search_result = re.search(r"^[A-Z]+", split_line[1])
         if search_result:
             method = search_result.group(0)
     return method
@@ -160,8 +171,8 @@ def get_source_ip(line):
     @type line: str
     @rtype: str
     """
-    search_result = re.search(r'^\d+.\d+.\d+.\d+', line)
-    return search_result.group(0) if search_result else ''
+    search_result = re.search(r"^\d+.\d+.\d+.\d+", line)
+    return search_result.group(0) if search_result else ""
 
 
 def get_status_code(line):
@@ -174,7 +185,7 @@ def get_status_code(line):
     status_code = 999
     split_line = line.split('"')
     if len(split_line) > 1:
-        search_result = re.search(r' \d{3} ', split_line[2])
+        search_result = re.search(r" \d{3} ", split_line[2])
         if search_result:
             status_code = int(search_result.group(0).strip())
     return status_code
@@ -187,10 +198,10 @@ def get_url(line):
     @type line: str
     @rtype: str
     """
-    url = 'NO URL FOUND'
+    url = "NO URL FOUND"
     split_line = line.split('"')
     if len(split_line) > 1:
-        search_result = re.search(r' (/[^\s]*)', split_line[1])
+        search_result = re.search(r" (/[^\s]*)", split_line[1])
         if search_result:
             url = search_result.group(0).strip()
     return url
@@ -203,7 +214,7 @@ def get_user_agent(line):
     @type line: str
     @rtype: str
     """
-    user_agent = 'NO USER AGENT'
+    user_agent = "NO USER AGENT"
     split_line = line.split('"')
     if len(split_line) > 5:
         user_agent = split_line[5]
@@ -218,7 +229,7 @@ def is_post(line):
     @rtype: bool
     """
     verb = get_method(line)
-    return verb == 'POST'
+    return verb == "POST"
 
 
 def is_get(line):
@@ -229,7 +240,7 @@ def is_get(line):
     @rtype: bool
     """
     verb = get_method(line)
-    return verb == 'GET'
+    return verb == "GET"
 
 
 def is_head(line):
@@ -240,7 +251,7 @@ def is_head(line):
     @rtype: bool
     """
     verb = get_method(line)
-    return verb == 'HEAD'
+    return verb == "HEAD"
 
 
 def is_options(line):
@@ -251,7 +262,7 @@ def is_options(line):
     @rtype: bool
     """
     verb = get_method(line)
-    return verb == 'OPTIONS'
+    return verb == "OPTIONS"
 
 
 def is_login_page(line):
@@ -290,7 +301,9 @@ def parse_line(line, event_type=None):
             post = is_post(line)
             login_page = is_login_page(line)
             if post and login_page:
-                event = Event(source_ip, event_type, status_code, user_agent, url, date_time, line)
+                event = Event(
+                    source_ip, event_type, status_code, user_agent, url, date_time, line
+                )
     else:
         # TODO: add all event types smarter
         for e in EventType:
@@ -326,7 +339,9 @@ def parse_line(line, event_type=None):
                 if options:
                     event_type = e
                     break
-        event = Event(source_ip, event_type, status_code, user_agent, url, date_time, line)
+        event = Event(
+            source_ip, event_type, status_code, user_agent, url, date_time, line
+        )
 
     return event
 
@@ -361,14 +376,22 @@ def parse_file(file_name, event_type=None, save_to_db=False):
     return result
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     if not isfile(PROCESSOR_DB_FILE):
         init_db()
-    parser = argparse.ArgumentParser(description='Parse a log file and output results')
-    parser.add_argument('--file', '-f', help='File to parse or file mask to parse many files', type=str, required=True)
-    parser.add_argument('--event', '-e', help='Event type to look for', type=int, required=False)
-    parser.add_argument('--persist', '-s', help='Save to DB', type=bool, required=False)
-    parser.add_argument('--print', '-p', help='Print output', type=bool, required=False)
+    parser = argparse.ArgumentParser(description="Parse a log file and output results")
+    parser.add_argument(
+        "--file",
+        "-f",
+        help="File to parse or file mask to parse many files",
+        type=str,
+        required=True,
+    )
+    parser.add_argument(
+        "--event", "-e", help="Event type to look for", type=int, required=False
+    )
+    parser.add_argument("--persist", "-s", help="Save to DB", type=bool, required=False)
+    parser.add_argument("--print", "-p", help="Print output", type=bool, required=False)
     args = parser.parse_args()
     print(args.__dict__)
     parsed_event_type = EventType(args.event) if args.event else None
@@ -377,4 +400,4 @@ if __name__ == '__main__':
     events = parse_file(args.file, parsed_event_type, save_to_dp)
     if args.print:
         pp(sorted(events, key=lambda e: (len(e.source_ip), e.source_ip)))
-    print('Number of events', len(events))
+    print("Number of events", len(events))
