@@ -13,8 +13,6 @@ This is a simple tool meant to be executed manually or as a cron job on a web se
 
 ## Print extracted requests:
 
-## Print extracted requests:
-
 $ python3 log_processor.py -f "/var/log/apache2/access.log.1" -p 1
 
 ## Save extracted requests in sqlite3 database:
