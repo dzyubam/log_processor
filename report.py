@@ -1,7 +1,7 @@
 from database import report_db_session, processor_db_session, BaseReport, init_db
 from log_processor import Event, EventType
 
-from sqlalchemy import Column, Integer, String, DateTime, func, Text
+from sqlalchemy import Column, Integer, String, DateTime, func, Text, text
 
 
 class Report(BaseReport):
@@ -189,7 +189,7 @@ def delete_all_reports():
     """
     Truncate reports table
     """
-    report_db_session.execute("""DROP TABLE `{}`;""".format(Report.__tablename__))
+    report_db_session.execute(text("""DROP TABLE `{}`;""".format(Report.__tablename__)))
     report_db_session.commit()
     report_db_session.close()
     init_db()

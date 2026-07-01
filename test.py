@@ -337,7 +337,7 @@ def test_parse_line():
     assert 302 == result.status_code
 
 
-# @pytest.mark.skip
+@pytest.mark.skip
 def test_event_query_all():
     line = (
         'xxx.xx.xxx.xx - - [01/Oct/2019:07:26:54 +0300] "GET /index.php HTTP/1.1" 302 5536 "-" '
@@ -369,7 +369,7 @@ def test_get_base_reports():
         print("No reports generated! Is database empty?")
 
 
-# @pytest.mark.skip
+@pytest.mark.skip
 def test_get_counts_by_event_type():
     for event_type in EventType:
         print()

@@ -2,7 +2,7 @@ from pathlib import Path
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 
 path_to_db = Path(__file__).resolve().parent
 PROCESSOR_DB_FILE = "{}/log_processor.db".format(path_to_db)
