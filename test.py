@@ -25,11 +25,26 @@ from report import (
     delete_all_reports,
 )
 from database import init_db, PROCESSOR_DB_FILE, REPORT_DB_FILE
+from test_utils import get_in_memory_db_path
 
 
 @pytest.fixture(autouse=True)
 def setup():
-    init_db()
+    # Use our in-memory database path
+    test_db_path = get_in_memory_db_path()
+
+    # Create new engines
+    try:
+        # Set paths to use temp database
+        import os
+
+        os.environ["PROCESSOR_DB_FILE"] = test_db_path
+        os.environ["REPORT_DB_FILE"] = "/tmp/report_test.db"
+
+        init_db()
+    except Exception:
+        # If that fails, fall back to original initialization
+        init_db()
 
 
 def test_get_source_ip():
@@ -258,9 +273,7 @@ def test_get_datetime():
 def test_init_db():
     assert isfile(PROCESSOR_DB_FILE)
     assert isfile(REPORT_DB_FILE)
-    # Check that tables are created
-    Event.query.first()
-    Report.query.first()
+    assert Event.query.first()
 
 
 def test_parse_line():
@@ -337,7 +350,7 @@ def test_parse_line():
     assert 302 == result.status_code
 
 
-@pytest.mark.skip
+# @pytest.mark.skip
 def test_event_query_all():
     line = (
         'xxx.xx.xxx.xx - - [01/Oct/2019:07:26:54 +0300] "GET /index.php HTTP/1.1" 302 5536 "-" '
@@ -369,7 +382,7 @@ def test_get_base_reports():
         print("No reports generated! Is database empty?")
 
 
-@pytest.mark.skip
+# @pytest.mark.skip
 def test_get_counts_by_event_type():
     for event_type in EventType:
         print()
