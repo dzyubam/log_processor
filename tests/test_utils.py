@@ -1,6 +1,7 @@
 import sqlite3
 import random
 from pathlib import Path
+import os
 
 # Global variable to hold in-memory database path for the session
 _IN_MEMORY_DB_PATH = None
@@ -16,9 +17,12 @@ def create_test_database(num_records=10000):
     Returns:
         str: Path to the created database file
     """
-    # Get absolute path to main database
+    # Get absolute path to main database  
+    # Use the directory of this script to find the main db
     current_dir = Path(__file__).resolve().parent
-    main_db_path = current_dir / "log_processor.db"
+    # Go up one level to get to project root, then find log_processor.db
+    project_root = current_dir.parent
+    main_db_path = project_root / "log_processor.db"
 
     if not main_db_path.exists():
         raise FileNotFoundError(f"Main database not found at {main_db_path}")

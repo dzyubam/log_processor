@@ -25,7 +25,7 @@ from report import (
     delete_all_reports,
 )
 from database import init_db, PROCESSOR_DB_FILE, REPORT_DB_FILE
-from test_utils import get_in_memory_db_path
+from .test_utils import get_in_memory_db_path
 
 
 @pytest.fixture(autouse=True)
